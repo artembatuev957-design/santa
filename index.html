@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0c1230">
+<title>Тайный Санта</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marck+Script&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+:root{--n:#0c1230;--n2:#1a2656;--b:#8c1d3f;--g:#f0c96a;--s:#f5f8ff;--p:#1f6b4f}
+html,body{margin:0}
+body{background:radial-gradient(120% 80% at 50% 0,var(--n2),var(--n) 60%) fixed;color:var(--s);font:400 16px/1.5 Nunito,sans-serif;min-height:100vh;overflow-x:hidden}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:0}
+#app{position:relative;z-index:1;max-width:440px;margin:0 auto;padding:max(20px,env(safe-area-inset-top)) 18px 48px;text-align:center}
+#demo-hot{position:fixed;left:0;top:0;width:48px;height:48px;z-index:60}
+h1{font:400 clamp(34px,9vw,46px)/1.1 'Marck Script',cursive;color:var(--g);margin:8px 0;text-shadow:0 0 24px rgba(240,201,106,.4)}
+h2{font:400 26px 'Marck Script',cursive;color:var(--g);margin:18px 0 4px;text-align:left}
+.sub{opacity:.8;margin:0 0 6px}
+label{display:block;margin-top:10px;font-weight:700;color:var(--g)}
+small{display:block;opacity:.75}
+.card{background:rgba(255,255,255,.07);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(240,201,106,.3);border-radius:20px;padding:18px;margin:14px 0;text-align:left}
+input,textarea{width:100%;padding:13px 14px;margin:6px 0;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:rgba(8,12,34,.55);color:var(--s);font:inherit}
+textarea{min-height:96px;resize:vertical}
+input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--g);outline-offset:2px}
+.btn{width:100%;padding:14px;margin:10px 0 0;border:0;border-radius:14px;background:var(--g);color:#2a1a05;font:700 16px Nunito,sans-serif;cursor:pointer;transition:transform .15s}
+.btn:active{transform:scale(.97)}
+.btn.alt{background:var(--b);color:#fff}
+.btn:disabled{opacity:.4;cursor:default}
+.lnk{background:none;border:0;color:#bcd;font:inherit;text-decoration:underline;margin:12px 0;cursor:pointer}
+.row{display:flex;gap:10px}.row .btn{flex:1}
+.room{display:block;width:100%;text-align:left;padding:12px 16px;margin:8px 0;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);color:inherit;font:inherit;cursor:pointer}
+.tree{width:120px;margin:0 auto;display:block}
+.lt circle{animation:tw 1.6s infinite}
+.lt circle:nth-child(2n){animation-delay:.5s}.lt circle:nth-child(3n){animation-delay:1s}
+@keyframes tw{50%{opacity:.2}}
+.scr{animation-duration:.8s;animation-fill-mode:both;animation-timing-function:cubic-bezier(.2,.8,.2,1)}
+[data-a=rise]{animation-name:rise}@keyframes rise{from{opacity:0;transform:translateY(60px) scale(.9)}}
+[data-a=zoom]{animation-name:zoom}@keyframes zoom{from{opacity:0;transform:scale(1.15);filter:blur(8px)}}
+[data-a=unfold]{animation-name:unfold;transform-origin:top}@keyframes unfold{from{opacity:0;transform:perspective(700px) rotateX(-70deg)}}
+[data-a=doors]{animation-name:doors}@keyframes doors{from{clip-path:inset(0 50% 0 50%);opacity:.2}to{clip-path:inset(0 0 0 0)}}
+[data-a=paper]{animation-name:paper}@keyframes paper{from{opacity:0;transform:translateY(-40px) rotate(-3deg)}}
+[data-a=drop]{animation-name:drop;animation-timing-function:cubic-bezier(.3,1.6,.5,1)}@keyframes drop{from{opacity:0;transform:translateY(-80px)}}
+[data-a=spark]{animation-name:spark}@keyframes spark{from{opacity:0;transform:scale(.6) rotate(-6deg);filter:brightness(3)}}
+.balls{display:flex;flex-wrap:wrap;gap:16px 8px;justify-content:center;margin:22px 0}
+.ball{width:80px;background:none;border:0;color:var(--s);font:inherit;cursor:pointer;transform-origin:top center}
+.ball span{display:grid;place-items:center;position:relative;width:58px;height:58px;margin:0 auto 4px;border-radius:50%;font:700 20px Nunito,sans-serif;color:#fff;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.7),transparent 30%),var(--c);opacity:.4;transition:opacity .5s,box-shadow .5s}
+.ball span:before{content:"";position:absolute;top:-9px;left:25px;width:8px;height:9px;background:var(--g);border-radius:2px}
+.ball.f span{opacity:1;box-shadow:0 0 22px var(--c)}
+.ball small{font-size:12px;line-height:1.2;word-break:break-word}
+.c0{--c:#c8294f}.c1{--c:#2f6bd6}.c2{--c:#d9a528}.c3{--c:#2a9d6e}.c4{--c:#8a45c9}
+.hang{animation:hang .9s cubic-bezier(.3,1.7,.5,1) both,swing 3.4s ease-in-out .9s infinite}
+@keyframes hang{from{transform:translateY(-120px) scale(.4);opacity:0}}
+@keyframes swing{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
+.pulse{animation:pl 2s infinite}@keyframes pl{50%{opacity:.4}}
+.gb{position:relative;width:170px;height:170px;margin:26px auto 6px;cursor:pointer}
+.gb .bd,.gb .ld{position:absolute;left:10px;right:10px}
+.gb .bd{bottom:0;height:110px;background:var(--b);border-radius:6px;box-shadow:inset 0 -12px #0003}
+.gb .ld{bottom:106px;left:0;right:0;height:42px;background:#a8284d;border-radius:8px;transform-origin:left bottom;transition:transform .8s cubic-bezier(.3,1.4,.5,1),opacity .8s}
+.gb .bd:before,.gb .ld:before{content:"";position:absolute;left:50%;margin-left:-11px;top:0;bottom:0;width:22px;background:var(--g)}
+.gb.open .ld{transform:translate(40px,-100px) rotate(28deg);opacity:0}
+.gb.open{opacity:.12;transform:scale(.8);transition:opacity .8s .3s,transform .8s .3s}
+.gb.shake{animation:sh .45s infinite}@keyframes sh{25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
+.gold{border-color:var(--g);box-shadow:0 0 30px rgba(240,201,106,.25);text-align:center}
+.gold h2{font-size:42px;text-align:center;margin:2px 0}
+.rv>*{animation:rv .6s both;animation-delay:calc(var(--i)*.15s)}
+@keyframes rv{from{opacity:0;transform:translateY(14px)}}
+.chips span{display:inline-block;padding:4px 12px;margin:3px;border-radius:99px;background:rgba(240,201,106,.15);border:1px solid rgba(240,201,106,.4);font-size:14px}
+.wi{margin:4px 0;text-align:left;padding-left:22px;position:relative}
+.wi:before{content:"★";position:absolute;left:0;color:var(--g)}
+#toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translate(-50%,30px);max-width:90%;padding:12px 18px;border-radius:14px;background:#fff;color:#1a1030;opacity:0;pointer-events:none;transition:.3s;z-index:70;font-weight:700}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas><i id="demo-hot"></i><main id="app"></main><div id="toast" role="status"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.js"></script>
+<script>
+const $=s=>document.querySelector(s),
+esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),
+split=s=>String(s||'').split(/[,;\n]+/).map(x=>x.trim()).filter(Boolean),
+sha=async s=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(b=>b.toString(16).padStart(2,'0')).join('');
+const sb=supabase.createClient('https://mfwgiedtvutstvnqpscb.supabase.co','sb_publishable_wW4VLW5zIzdfgv_A7WAWgg_U_x6GBdY');
+const DEMO='23ec4fa005f3739e8e29c143a7dd18f1772a5f61c89bb3ba11dcf8d7015e7655';
+let me=null,chan=null,poll=null,pend=new URLSearchParams(location.search).get('room')||'';
+const nick=()=>me?.user_metadata?.nick||'друг';
+const TREE='<svg class="tree" viewBox="0 0 120 138"><path d="M60 14L88 56H32zM60 38L96 90H24zM60 66L104 122H16z" fill="#1f6b4f"/><rect x="53" y="120" width="14" height="14" fill="#6b3f26"/><path d="M60 0l3.5 8 8.5.5-6.5 5.5 2 8.5-7.5-4.5-7.5 4.5 2-8.5L48 8.5l8.5-.5z" fill="#f0c96a"/><g class="lt"><circle cx="52" cy="48" r="3" fill="#e04a6f"/><circle cx="68" cy="56" r="3" fill="#f0c96a"/><circle cx="46" cy="72" r="3" fill="#fff"/><circle cx="64" cy="82" r="3" fill="#e04a6f"/><circle cx="80" cy="96" r="3" fill="#f0c96a"/><circle cx="38" cy="106" r="3" fill="#fff"/><circle cx="60" cy="110" r="3" fill="#e04a6f"/><circle cx="88" cy="114" r="3" fill="#fff"/></g></svg>';
+
+function toast(m){const t=$('#toast');t.textContent=m;t.className='show';clearTimeout(t._t);t._t=setTimeout(()=>t.className='',3600)}
+function guard(f){return async function(){const b=this;b.disabled=true;try{await f()}catch(e){toast(e.message||'Что-то пошло не так')}b.disabled=false}}
+function clean(){if(chan){sb.removeChannel(chan);chan=null}clearInterval(poll)}
+function show(a,html){clean();$('#app').innerHTML='<section class="scr" data-a="'+a+'">'+html+'</section>';scrollTo(0,0)}
+const getRoom=async id=>(await sb.from('rooms').select('*').eq('id',id).single()).data;
+const fmt=d=>new Date(d+'T12:00').toLocaleDateString('ru',{day:'numeric',month:'long'});
+const openRoom=r=>r.status==='drawn'?reveal(r,false):lobby(r);
+
+/* ---------- вход и регистрация ---------- */
+function auth(reg){
+  show('rise',TREE+'<h1>Тайный Санта</h1><p class="sub">'+(reg?'Создай аккаунт, это нужно один раз':'С возвращением! Войди в аккаунт')+'</p><div class="card"><input id="n" placeholder="Ник" maxlength="20" autocomplete="username"><input id="p" type="password" placeholder="Пароль (от 6 символов)" autocomplete="'+(reg?'new-password':'current-password')+'"><button class="btn" id="go">'+(reg?'Зарегистрироваться':'Войти')+'</button><button class="lnk" id="sw">'+(reg?'Уже есть аккаунт? Войти':'Впервые здесь? Регистрация')+'</button></div>');
+  $('#sw').onclick=()=>auth(!reg);
+  $('#go').onclick=guard(async()=>{
+    const n=$('#n').value.trim(),p=$('#p').value;
+    if(n.length<2)return toast('Ник: от 2 символов');
+    if(p.length<6)return toast('Пароль: от 6 символов');
+    const email=(await sha(n.toLowerCase()))+'@santa-nick.app';
+    const r=reg?await sb.auth.signUp({email,password:p,options:{data:{nick:n}}}):await sb.auth.signInWithPassword({email,password:p});
+    if(r.error)return toast(reg?(/registered|exists/i.test(r.error.message)?'Этот ник уже занят':r.error.message):'Неверный ник или пароль');
+    if(!r.data.session)return toast('В Supabase отключи подтверждение почты (Confirm email)');
+    me=r.data.user;enter();
+  });
+}
+function enter(){if(pend){const q=pend;pend='';join(q)}else home()}
+
+/* ---------- главный экран ---------- */
+async function home(){
+  const {data:rs}=await sb.from('rooms').select('id,name,status,creator_id,exchange_date,created_at').order('created_at',{ascending:false});
+  const d=Math.ceil((new Date(new Date().getFullYear()+1,0,1)-new Date())/864e5),m=d%10,w=m==1&&d%100!=11?'день':(m>1&&m<5&&(d%100<12||d%100>14))?'дня':'дней';
+  show('zoom',TREE+'<h1>Привет, '+esc(nick())+'!</h1><p class="sub">До Нового года '+d+' '+w+'</p><div class="row"><button class="btn" id="bc">Создать комнату</button><button class="btn alt" id="bj">Войти в комнату</button></div>'+((rs||[]).length?'<h2>Твои комнаты</h2>'+rs.map((r,i)=>'<button class="room" data-i="'+i+'"><b>'+esc(r.name)+'</b><small>'+(r.status==='drawn'?'Жеребьёвка прошла':'Идёт набор участников')+'</small></button>').join(''):'')+'<button class="lnk" id="out">Выйти из аккаунта</button>');
+  $('#bc').onclick=create;$('#bj').onclick=()=>join('');
+  document.querySelectorAll('.room').forEach(b=>b.onclick=()=>openRoom(rs[b.dataset.i]));
+  $('#out').onclick=async()=>{await sb.auth.signOut();me=null;auth(false)};
+}
+
+/* ---------- создать / войти в комнату ---------- */
+function create(){
+  show('unfold','<h1>Новая комната</h1><p class="sub">Друзья войдут по названию и паролю</p><div class="card"><input id="rn" placeholder="Название комнаты" maxlength="40"><input id="rp" placeholder="Пароль комнаты (от 4 символов)" maxlength="72"><label>Дата обмена подарками (необязательно)</label><input id="rd" type="date"><button class="btn" id="go">Создать</button><button class="lnk" id="bk">← Назад</button></div><small>Запомни пароль: восстановить его нельзя</small>');
+  $('#bk').onclick=home;
+  $('#go').onclick=guard(async()=>{
+    const {data,error}=await sb.rpc('create_room',{p_name:$('#rn').value,p_password:$('#rp').value,p_date:$('#rd').value||null});
+    if(error)return toast(error.message);
+    profile(await getRoom(data));
+  });
+}
+function join(pre){
+  show('doors','<h1>Вход в комнату</h1><p class="sub">Название и пароль даст организатор</p><div class="card"><input id="jn" placeholder="Название комнаты" maxlength="40" value="'+esc(pre)+'"><input id="jp" placeholder="Пароль комнаты" maxlength="72"><button class="btn" id="go">Войти</button><button class="lnk" id="bk">← Назад</button></div>');
+  $('#bk').onclick=home;
+  $('#go').onclick=guard(async()=>{
+    const {data:id,error}=await sb.rpc('join_room',{p_name:$('#jn').value,p_password:$('#jp').value});
+    if(error)return toast(error.message);
+    const r=await getRoom(id);
+    if(r.status==='drawn')return reveal(r,false);
+    const {data:m}=await sb.from('members').select('filled').eq('room_id',id).eq('user_id',me.id).single();
+    m&&m.filled?lobby(r):profile(r);
+  });
+}
+
+/* ---------- анкета ---------- */
+async function profile(r){
+  const {data:w}=await sb.from('wishes').select('interests,wishlist').eq('room_id',r.id).maybeSingle();
+  show('paper','<h1>Твоя анкета</h1><p class="sub">Комната «'+esc(r.name)+'». Это увидит только тот, кто будет тебе дарить</p><div class="card"><label>Интересы, через запятую</label><textarea id="i" maxlength="1000" placeholder="кофе, футбол, настолки">'+esc(w&&w.interests)+'</textarea><div class="chips" id="chp"></div><label>Что бы хотелось получить</label><textarea id="w" maxlength="2000" placeholder="Каждое с новой строки. Это только подсказки, дарить именно это необязательно">'+esc(w&&w.wishlist)+'</textarea><button class="btn" id="sv">Готово</button></div>');
+  const chp=()=>$('#chp').innerHTML=split($('#i').value).map(x=>'<span>'+esc(x)+'</span>').join('');
+  $('#i').oninput=chp;chp();
+  $('#sv').onclick=guard(async()=>{
+    const {error}=await sb.rpc('save_wishes',{p_room:r.id,p_interests:$('#i').value,p_wishlist:$('#w').value});
+    if(error)return toast(error.message);
+    lobby(r);
+  });
+}
+
+/* ---------- лобби ---------- */
+function lobby(r){
+  const boss=r.creator_id===me.id;
+  show('drop','<h1>'+esc(r.name)+'</h1><p class="sub">'+(r.exchange_date?'Обмен подарками: '+fmt(r.exchange_date):'Ждём всех участников')+'</p><div class="balls" id="balls"></div><p class="sub" id="cnt"></p><div id="act"></div><button class="btn alt" id="ed">Изменить анкету</button><button class="btn alt" id="cp">Скопировать ссылку-приглашение</button><button class="lnk" id="bk">← К моим комнатам</button>');
+  $('#ed').onclick=()=>profile(r);$('#bk').onclick=home;
+  $('#cp').onclick=()=>{navigator.clipboard.writeText(location.origin+location.pathname+'?room='+encodeURIComponent(r.name)).then(()=>toast('Ссылка скопирована. Пароль отправь отдельно'),()=>toast('Не удалось скопировать'))};
+  let ms=[];
+  const load=async()=>{
+    const [a,b]=await Promise.all([sb.from('members').select('user_id,nick,filled').eq('room_id',r.id).order('joined_at'),sb.from('rooms').select('status').eq('id',r.id).single()]);
+    if(!a.data)return;
+    if(b.data&&b.data.status==='drawn')return reveal(r,true);
+    ms=a.data;
+    if(!ms.some(m=>m.user_id===me.id))return home();
+    const box=$('#balls');if(!box)return;
+    const ids=new Set(ms.map(m=>m.user_id));
+    [...box.children].forEach(e=>{if(!ids.has(e.dataset.u))e.remove()});
+    ms.forEach((m,i)=>{
+      let e=box.querySelector('[data-u="'+m.user_id+'"]');
+      if(!e){e=document.createElement('button');e.dataset.u=m.user_id;e.className='ball hang c'+(i%5);box.append(e)}
+      e.classList.toggle('f',m.filled);
+      e.innerHTML='<span>'+esc(m.nick.slice(0,2))+'</span><small>'+esc(m.nick)+(m.user_id===r.creator_id?' ★':'')+'</small>';
+      e.onclick=async()=>{if(boss&&m.user_id!==me.id&&confirm('Удалить '+m.nick+' из комнаты?')){const {error}=await sb.rpc('kick_member',{p_room:r.id,p_user:m.user_id});error?toast(error.message):load()}};
+    });
+    const f=ms.filter(m=>m.filled).length;
+    $('#cnt').textContent='В комнате: '+ms.length+'. Анкету заполнили: '+f;
+    const act=$('#act');
+    if(boss){
+      if(!act.firstChild){act.innerHTML='<button class="btn" id="st">Начать игру</button><small>Нажми, когда все зашли. Участника можно убрать нажатием на его шар</small>';
+        $('#st').onclick=guard(async()=>{
+          if(ms.some(m=>!m.filled)&&!confirm('Не все заполнили анкету. Начать всё равно?'))return;
+          if(!confirm('Начать жеребьёвку? После старта новые люди зайти не смогут'))return;
+          const {error}=await sb.rpc('start_game',{p_room:r.id});
+          if(error)return toast(error.message);
+          reveal(r,true);
+        })}
+      $('#st').disabled=ms.length<3;
+    }else if(!act.firstChild)act.innerHTML='<p class="pulse">Организатор скоро запустит жеребьёвку…</p>';
+  };
+  chan=sb.channel('room-'+r.id)
+    .on('postgres_changes',{event:'*',schema:'public',table:'members',filter:'room_id=eq.'+r.id},load)
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'rooms',filter:'id=eq.'+r.id},load)
+    .subscribe();
+  poll=setInterval(load,5000);
+  load();
+}
+
+/* ---------- жеребьёвка и подарок ---------- */
+async function reveal(r,live){
+  const {data,error}=await sb.rpc('get_my_target',{p_room:r.id});
+  if(error||!data||!data.length){toast(error?error.message:'Пара пока не найдена');return home()}
+  gift(data[0],home,live);
+}
+function gift(t,back,live){
+  show('spark','<h1>'+(live?'Жеребьёвка!':'Твой подопечный')+'</h1><div class="gb'+(live?' shake':'')+'" id="gb"><div class="ld"></div><div class="bd"></div></div><p class="sub" id="gs">'+(live?'3':'Нажми на подарок')+'</p><div id="res"></div><button class="lnk" id="bk">← Назад</button>');
+  const gb=$('#gb'),gs=$('#gs'),res=$('#res');let ready=!live,done=0;
+  if(live){let c=3;const iv=setInterval(()=>{c--;if(c>0)gs.textContent=c;else{clearInterval(iv);gs.textContent='Нажми на подарок';gb.classList.remove('shake');ready=true}},800)}
+  gb.onclick=()=>{
+    if(!ready||done)return;done=1;gb.classList.add('open');burst();gs.textContent='';
+    setTimeout(()=>{
+      const it=split(t.interests),wl=String(t.wishlist||'').split('\n').map(x=>x.trim()).filter(Boolean);
+      res.innerHTML='<div class="card gold rv"><small style="--i:0">Ты даришь подарок</small><h2 style="--i:1">'+esc(t.nick)+'</h2><label style="--i:2">Интересы</label><div class="chips" style="--i:3">'+(it.length?it.map(x=>'<span>'+esc(x)+'</span>').join(''):'<em>Ничего не написал</em>')+'</div><label style="--i:4">Может обрадоваться</label><div style="--i:5">'+(wl.length?wl.map(x=>'<p class="wi">'+esc(x)+'</p>').join(''):'<em>Список пуст, придумай сюрприз</em>')+'</div><small style="--i:6">Это только подсказки, дарить именно это необязательно</small></div>';
+    },700);
+  };
+  $('#bk').onclick=back;
+}
+
+/* ---------- скрытое демо ---------- */
+let D=[],T=null,tp=[];
+$('#demo-hot').onclick=async()=>{
+  const t=Date.now();tp=tp.filter(x=>t-x<900);tp.push(t);
+  if(tp.length<3)return;tp=[];
+  const p=prompt('Пароль');if(p===null)return;
+  if(await sha(p)===DEMO)demo();else toast('Неверный пароль');
+};
+function demo(){
+  const list='<div class="balls">'+D.map((x,i)=>'<button class="ball hang f c'+(i%5)+'" data-i="'+i+'"><span>'+esc(x.n.slice(0,2))+'</span><small>'+esc(x.n)+'</small></button>').join('')+'</div>';
+  if(T){
+    show('zoom','<h1>Демо: итоги</h1><p class="sub">Посмотри глазами участника</p><div class="balls">'+D.map((x,i)=>'<button class="ball hang f c'+(i%5)+'" data-v="'+i+'"><span>'+esc(x.n.slice(0,2))+'</span><small>'+esc(x.n)+'</small></button>').join('')+'</div><button class="btn alt" id="rs">Начать заново</button><button class="lnk" id="ex">← Выйти из демо</button>');
+    document.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{const k=+b.dataset.v,o=D[T[k]];gift({nick:o.n,interests:o.i,wishlist:o.w},demo,true)});
+    $('#rs').onclick=()=>{D=[];T=null;demo()};
+  }else{
+    show('zoom','<h1>Демо</h1><p class="sub">Ничего не сохраняется, всё только в этой вкладке</p><div class="card"><input id="dn" placeholder="Имя" maxlength="20"><textarea id="di" placeholder="Интересы через запятую"></textarea><textarea id="dw" placeholder="Подарки, каждый с новой строки"></textarea><button class="btn" id="da">Добавить участника</button></div>'+list+'<small>Нажми на шар, чтобы убрать участника</small><button class="btn" id="dg"'+(D.length<3?' disabled':'')+'>Жеребьёвка (от 3 человек)</button><button class="lnk" id="ex">← Выйти из демо</button>');
+    $('#da').onclick=()=>{const n=$('#dn').value.trim();if(!n)return toast('Впиши имя');D.push({n,i:$('#di').value,w:$('#dw').value});demo()};
+    document.querySelectorAll('.ball').forEach(b=>b.onclick=()=>{D.splice(+b.dataset.i,1);demo()});
+    $('#dg').onclick=()=>{const o=D.map((_,i)=>i).sort(()=>Math.random()-.5);T={};o.forEach((g,i)=>T[g]=o[(i+1)%o.length]);demo()};
+  }
+  $('#ex').onclick=()=>{D=[];T=null;me?home():auth(false)};
+}
+
+/* ---------- снег и конфетти ---------- */
+const cv=$('#fx'),cx=cv.getContext('2d');let W,H,F=[],C=[];
+function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight}
+addEventListener('resize',rs);rs();
+for(let i=0;i<(innerWidth<600?60:110);i++)F.push({x:Math.random()*W,y:Math.random()*H,z:Math.random()*.8+.2,p:Math.random()*6});
+function burst(){const k=['#f0c96a','#e04a6f','#fff','#4fbf8f','#7aa7ff'];for(let i=0;i<120;i++){const a=Math.random()*6.28,s=3+Math.random()*7;C.push({x:W/2,y:H*.4,vx:Math.cos(a)*s,vy:Math.sin(a)*s-4,l:90+Math.random()*60,r:0,vr:Math.random()*.3,c:k[i%5]})}}
+function loop(){
+  cx.clearRect(0,0,W,H);cx.fillStyle='#fff';
+  for(const f of F){f.y+=f.z*1.1;f.p+=.01;f.x+=Math.sin(f.p)*.4*f.z;if(f.y>H+5){f.y=-5;f.x=Math.random()*W}cx.globalAlpha=.3+f.z*.6;cx.beginPath();cx.arc(f.x,f.y,f.z*2.4,0,7);cx.fill()}
+  cx.globalAlpha=1;C=C.filter(c=>c.l>0);
+  for(const c of C){c.x+=c.vx;c.y+=c.vy;c.vy+=.12;c.vx*=.99;c.l--;c.r+=c.vr;cx.save();cx.translate(c.x,c.y);cx.rotate(c.r);cx.fillStyle=c.c;cx.fillRect(-3,-2,6,4);cx.restore()}
+  requestAnimationFrame(loop);
+}
+if(!matchMedia('(prefers-reduced-motion:reduce)').matches)loop();
+
+/* ---------- старт ---------- */
+(async()=>{
+  const {data}=await sb.auth.getSession();
+  if(data.session){me=data.session.user;enter()}else auth(false);
+})();
+</script>
+</body>
+</html>
