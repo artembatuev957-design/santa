@@ -14,7 +14,7 @@
 html,body{margin:0}
 body{background:radial-gradient(120% 80% at 50% 0,var(--n2),var(--n) 60%) fixed;color:var(--s);font:400 16px/1.5 Nunito,sans-serif;min-height:100vh;overflow-x:hidden}
 #fx{position:fixed;inset:0;pointer-events:none;z-index:0}
-#app{position:relative;z-index:1;max-width:440px;margin:0 auto;padding:max(20px,env(safe-area-inset-top)) 18px 48px;text-align:center}
+#app{position:relative;z-index:1;max-width:440px;margin:0 auto;padding:max(24px,env(safe-area-inset-top)) 18px max(24px,env(safe-area-inset-bottom));text-align:center;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;justify-content:center}
 #demo-hot{position:fixed;left:0;top:0;width:48px;height:48px;z-index:60}
 h1{font:400 clamp(34px,9vw,46px)/1.1 'Marck Script',cursive;color:var(--g);margin:8px 0;text-shadow:0 0 24px rgba(240,201,106,.4)}
 h2{font:400 26px 'Marck Script',cursive;color:var(--g);margin:18px 0 4px;text-align:left}
@@ -49,6 +49,7 @@ input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--g);outli
 .ball span{display:grid;place-items:center;position:relative;width:58px;height:58px;margin:0 auto 4px;border-radius:50%;font:700 20px Nunito,sans-serif;color:#fff;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.7),transparent 30%),var(--c);opacity:.4;transition:opacity .5s,box-shadow .5s}
 .ball span:before{content:"";position:absolute;top:-9px;left:25px;width:8px;height:9px;background:var(--g);border-radius:2px}
 .ball.f span{opacity:1;box-shadow:0 0 22px var(--c)}
+.ball .x{position:absolute;top:-4px;right:-4px;width:20px;height:20px;border-radius:50%;background:#fff;color:#8c1d3f;font:700 15px/20px Nunito,sans-serif;font-style:normal}
 .ball small{font-size:12px;line-height:1.2;word-break:break-word}
 .c0{--c:#c8294f}.c1{--c:#2f6bd6}.c2{--c:#d9a528}.c3{--c:#2a9d6e}.c4{--c:#8a45c9}
 .hang{animation:hang .9s cubic-bezier(.3,1.7,.5,1) both,swing 3.4s ease-in-out .9s infinite}
@@ -160,11 +161,20 @@ async function profile(r){
   });
 }
 
+/* ---------- закрыть комнату (только создатель) ---------- */
+async function closeRoom(r){
+  if(!confirm('Закрыть комнату «'+r.name+'»? Участники и анкеты будут удалены, отменить это нельзя'))return;
+  const {error}=await sb.rpc('delete_room',{p_room:r.id});
+  if(error)return toast(error.message);
+  toast('Комната закрыта');home();
+}
+
 /* ---------- лобби ---------- */
 function lobby(r){
   const boss=r.creator_id===me.id;
-  show('drop','<h1>'+esc(r.name)+'</h1><p class="sub">'+(r.exchange_date?'Обмен подарками: '+fmt(r.exchange_date):'Ждём всех участников')+'</p><div class="balls" id="balls"></div><p class="sub" id="cnt"></p><div id="act"></div><button class="btn alt" id="ed">Изменить анкету</button><button class="btn alt" id="cp">Скопировать ссылку-приглашение</button><button class="lnk" id="bk">← К моим комнатам</button>');
+  show('drop','<h1>'+esc(r.name)+'</h1><p class="sub">'+(r.exchange_date?'Обмен подарками: '+fmt(r.exchange_date):'Ждём всех участников')+'</p><div class="balls" id="balls"></div><p class="sub" id="cnt"></p><div id="act"></div><button class="btn alt" id="ed">Изменить анкету</button><button class="btn alt" id="cp">Скопировать ссылку-приглашение</button>'+(boss?'<button class="btn alt" id="cl">Закрыть комнату</button>':'')+'<button class="lnk" id="bk">← К моим комнатам</button>');
   $('#ed').onclick=()=>profile(r);$('#bk').onclick=home;
+  if(boss)$('#cl').onclick=()=>closeRoom(r);
   $('#cp').onclick=()=>{navigator.clipboard.writeText(location.origin+location.pathname+'?room='+encodeURIComponent(r.name)).then(()=>toast('Ссылка скопирована. Пароль отправь отдельно'),()=>toast('Не удалось скопировать'))};
   let ms=[];
   const load=async()=>{
@@ -172,7 +182,7 @@ function lobby(r){
     if(!a.data)return;
     if(b.data&&b.data.status==='drawn')return reveal(r,true);
     ms=a.data;
-    if(!ms.some(m=>m.user_id===me.id))return home();
+    if(!ms.some(m=>m.user_id===me.id)){toast('Ты больше не в этой комнате: её закрыли или тебя убрали');return home()}
     const box=$('#balls');if(!box)return;
     const ids=new Set(ms.map(m=>m.user_id));
     [...box.children].forEach(e=>{if(!ids.has(e.dataset.u))e.remove()});
@@ -180,14 +190,14 @@ function lobby(r){
       let e=box.querySelector('[data-u="'+m.user_id+'"]');
       if(!e){e=document.createElement('button');e.dataset.u=m.user_id;e.className='ball hang c'+(i%5);box.append(e)}
       e.classList.toggle('f',m.filled);
-      e.innerHTML='<span>'+esc(m.nick.slice(0,2))+'</span><small>'+esc(m.nick)+(m.user_id===r.creator_id?' ★':'')+'</small>';
+      e.innerHTML='<span>'+esc(m.nick.slice(0,2))+(boss&&m.user_id!==me.id?'<i class="x">×</i>':'')+'</span><small>'+esc(m.nick)+(m.user_id===r.creator_id?' ★':'')+'</small>';
       e.onclick=async()=>{if(boss&&m.user_id!==me.id&&confirm('Удалить '+m.nick+' из комнаты?')){const {error}=await sb.rpc('kick_member',{p_room:r.id,p_user:m.user_id});error?toast(error.message):load()}};
     });
     const f=ms.filter(m=>m.filled).length;
     $('#cnt').textContent='В комнате: '+ms.length+'. Анкету заполнили: '+f;
     const act=$('#act');
     if(boss){
-      if(!act.firstChild){act.innerHTML='<button class="btn" id="st">Начать игру</button><small>Нажми, когда все зашли. Участника можно убрать нажатием на его шар</small>';
+      if(!act.firstChild){act.innerHTML='<button class="btn" id="st">Начать игру</button><small>Нажми, когда все зашли. Чтобы убрать участника, нажми × на его шаре</small>';
         $('#st').onclick=guard(async()=>{
           if(ms.some(m=>!m.filled)&&!confirm('Не все заполнили анкету. Начать всё равно?'))return;
           if(!confirm('Начать жеребьёвку? После старта новые люди зайти не смогут'))return;
@@ -211,6 +221,7 @@ async function reveal(r,live){
   const {data,error}=await sb.rpc('get_my_target',{p_room:r.id});
   if(error||!data||!data.length){toast(error?error.message:'Пара пока не найдена');return home()}
   gift(data[0],home,live);
+  if(r.creator_id===me.id){$('#bk').insertAdjacentHTML('afterend','<button class="lnk" id="cl">Закрыть комнату</button>');$('#cl').onclick=()=>closeRoom(r)}
 }
 function gift(t,back,live){
   show('spark','<h1>'+(live?'Жеребьёвка!':'Твой подопечный')+'</h1><div class="gb'+(live?' shake':'')+'" id="gb"><div class="ld"></div><div class="bd"></div></div><p class="sub" id="gs">'+(live?'3':'Нажми на подарок')+'</p><div id="res"></div><button class="lnk" id="bk">← Назад</button>');
