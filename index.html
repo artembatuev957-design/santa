@@ -207,15 +207,14 @@ const TREE='<svg class="tree" viewBox="0 0 120 138"><path d="M60 14L88 56H32zM60
 function toast(m){const t=$('#toast');t.textContent=m;t.className='show';clearTimeout(t._t);t._t=setTimeout(()=>t.className='',3600)}
 function guard(f){return async function(){const b=this;b.disabled=true;try{await f()}catch(e){toast(e.message||'Что-то пошло не так')}b.disabled=false}}
 function clean(){if(chan){sb.removeChannel(chan);chan=null}clearInterval(poll)}
-function show(a,html){clean();$('#app').innerHTML='<section class="scr" data-a="'+a+'">'+html+'</section>';scrollTo(0,0)}
+function show(a,html){clean();const help=a==='spark'?'':'<button class="help-link" id="help-open" type="button">▶ Я не понимаю, что делать</button>';$('#app').innerHTML='<section class="scr" data-a="'+a+'">'+html+help+'</section>';if(a!=='spark')$('#help-open').onclick=openHelp;scrollTo(0,0)}
 const getRoom=async id=>(await sb.from('rooms').select('*').eq('id',id).single()).data;
 const fmt=d=>new Date(d+'T12:00').toLocaleDateString('ru',{day:'numeric',month:'long'});
 const openRoom=r=>r.status==='drawn'?reveal(r,false):lobby(r);
 
 /* ---------- вход и регистрация ---------- */
 function auth(reg){
-  show('rise',TREE+'<h1>Тайный Санта</h1><p class="sub">'+(reg?'Создай аккаунт, это нужно один раз':'С возвращением! Войди в аккаунт')+'</p><div class="card"><input id="n" placeholder="Ник" maxlength="20" autocomplete="username"><input id="p" type="password" placeholder="Пароль (от 6 символов)" autocomplete="'+(reg?'new-password':'current-password')+'"><button class="btn" id="go">'+(reg?'Зарегистрироваться':'Войти')+'</button><button class="lnk" id="sw">'+(reg?'Уже есть аккаунт? Войти':'Впервые здесь? Регистрация')+'</button></div><button class="help-link" id="help-open" type="button">▶ Я не понимаю, что делать</button>');
-  $('#help-open').onclick=openHelp;
+  show('rise',TREE+'<h1>Тайный Санта</h1><p class="sub">'+(reg?'Создай аккаунт, это нужно один раз':'С возвращением! Войди в аккаунт')+'</p><div class="card"><input id="n" placeholder="Ник" maxlength="20" autocomplete="username"><input id="p" type="password" placeholder="Пароль (от 6 символов)" autocomplete="'+(reg?'new-password':'current-password')+'"><button class="btn" id="go">'+(reg?'Зарегистрироваться':'Войти')+'</button><button class="lnk" id="sw">'+(reg?'Уже есть аккаунт? Войти':'Впервые здесь? Регистрация')+'</button></div>');
   $('#sw').onclick=()=>auth(!reg);
   $('#go').onclick=guard(async()=>{
     const n=$('#n').value.trim(),p=$('#p').value;
@@ -235,7 +234,7 @@ async function home(){
   const {data:rs}=await sb.from('rooms').select('id,name,status,creator_id,exchange_date,created_at').order('created_at',{ascending:false});
   const d=Math.ceil((new Date(new Date().getFullYear()+1,0,1)-new Date())/864e5),m=d%10,w=m==1&&d%100!=11?'день':(m>1&&m<5&&(d%100<12||d%100>14))?'дня':'дней';
   show('zoom',TREE+'<h1>Привет, '+esc(nick())+'!</h1><p class="sub">До Нового года '+d+' '+w+'</p><div class="row"><button class="btn" id="bc">Создать комнату</button><button class="btn alt" id="bj">Войти в комнату</button></div>'+((rs||[]).length?'<h2>Твои комнаты</h2>'+rs.map((r,i)=>'<button class="room" data-i="'+i+'"><b>'+esc(r.name)+'</b><small>'+(r.status==='drawn'?'Жеребьёвка прошла':'Идёт набор участников')+'</small></button>').join(''):'')+'<button class="lnk" id="out">Выйти из аккаунта</button>');
-  $('#bc').onclick=create;$('#bj').onclick=()=>join('');$('#help-open').onclick=openHelp;
+  $('#bc').onclick=create;$('#bj').onclick=()=>join('');
   document.querySelectorAll('.room').forEach(b=>b.onclick=()=>openRoom(rs[b.dataset.i]));
   $('#out').onclick=()=>{sb.auth.signOut({scope:'local'}).catch(()=>{});me=null;auth(false)};
 }
