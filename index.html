@@ -144,6 +144,19 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 }
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
+
+/* Help video */
+.help-link{display:inline-flex;align-items:center;gap:9px;margin:17px auto 0;padding:11px 17px;border:1px solid rgba(245,213,138,.35);border-radius:999px;background:rgba(255,255,255,.07);color:var(--gold2);font:700 14px Nunito,sans-serif;cursor:pointer;box-shadow:0 8px 28px rgba(0,0,0,.16);backdrop-filter:blur(14px);transition:transform .2s,background .2s,border-color .2s}
+.help-link:hover{transform:translateY(-2px);background:rgba(255,255,255,.12);border-color:rgba(245,213,138,.65)}
+#help-modal{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(2,5,16,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+#help-modal.open{display:flex;animation:helpFade .22s ease-out}
+@keyframes helpFade{from{opacity:0}to{opacity:1}}
+.help-panel{position:relative;width:min(100%,520px);padding:14px;border:1px solid rgba(245,213,138,.3);border-radius:24px;background:linear-gradient(145deg,rgba(34,48,91,.96),rgba(9,16,39,.97));box-shadow:0 25px 90px rgba(0,0,0,.55)}
+.help-panel h2{margin:3px 48px 12px 4px;font-size:28px}
+#help-video{display:block;width:100%;max-height:72vh;aspect-ratio:9/16;object-fit:contain;background:#030611;border-radius:15px}
+#help-close{position:absolute;right:12px;top:12px;width:38px;height:38px;border:1px solid var(--line);border-radius:50%;background:rgba(255,255,255,.1);color:white;font-size:22px;cursor:pointer}
+@media(max-width:520px){#help-modal{padding:10px}.help-panel{padding:10px;border-radius:19px}#help-video{max-height:76vh}}
+
 </style>
 </head>
 <body>
@@ -169,6 +182,16 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
   <audio id="mp-audio" preload="metadata"></audio>
 </div>
 <canvas id="fx"></canvas><i id="demo-hot"></i><main id="app"></main><div id="toast" role="status"></div>
+<div id="help-modal" aria-hidden="true">
+  <div class="help-panel" role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <button id="help-close" type="button" aria-label="Закрыть">×</button>
+    <h2 id="help-title">Как это работает</h2>
+    <video id="help-video" controls playsinline preload="none">
+      <source src="secret_santa_draft.mp4" type="video/mp4">
+      Твой браузер не поддерживает воспроизведение видео.
+    </video>
+  </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.js"></script>
 <script>
 const $=s=>document.querySelector(s),
@@ -191,7 +214,8 @@ const openRoom=r=>r.status==='drawn'?reveal(r,false):lobby(r);
 
 /* ---------- вход и регистрация ---------- */
 function auth(reg){
-  show('rise',TREE+'<h1>Тайный Санта</h1><p class="sub">'+(reg?'Создай аккаунт, это нужно один раз':'С возвращением! Войди в аккаунт')+'</p><div class="card"><input id="n" placeholder="Ник" maxlength="20" autocomplete="username"><input id="p" type="password" placeholder="Пароль (от 6 символов)" autocomplete="'+(reg?'new-password':'current-password')+'"><button class="btn" id="go">'+(reg?'Зарегистрироваться':'Войти')+'</button><button class="lnk" id="sw">'+(reg?'Уже есть аккаунт? Войти':'Впервые здесь? Регистрация')+'</button></div>');
+  show('rise',TREE+'<h1>Тайный Санта</h1><p class="sub">'+(reg?'Создай аккаунт, это нужно один раз':'С возвращением! Войди в аккаунт')+'</p><div class="card"><input id="n" placeholder="Ник" maxlength="20" autocomplete="username"><input id="p" type="password" placeholder="Пароль (от 6 символов)" autocomplete="'+(reg?'new-password':'current-password')+'"><button class="btn" id="go">'+(reg?'Зарегистрироваться':'Войти')+'</button><button class="lnk" id="sw">'+(reg?'Уже есть аккаунт? Войти':'Впервые здесь? Регистрация')+'</button></div><button class="help-link" id="help-open" type="button">▶ Я не понимаю, что делать</button>');
+  $('#help-open').onclick=openHelp;
   $('#sw').onclick=()=>auth(!reg);
   $('#go').onclick=guard(async()=>{
     const n=$('#n').value.trim(),p=$('#p').value;
@@ -211,7 +235,7 @@ async function home(){
   const {data:rs}=await sb.from('rooms').select('id,name,status,creator_id,exchange_date,created_at').order('created_at',{ascending:false});
   const d=Math.ceil((new Date(new Date().getFullYear()+1,0,1)-new Date())/864e5),m=d%10,w=m==1&&d%100!=11?'день':(m>1&&m<5&&(d%100<12||d%100>14))?'дня':'дней';
   show('zoom',TREE+'<h1>Привет, '+esc(nick())+'!</h1><p class="sub">До Нового года '+d+' '+w+'</p><div class="row"><button class="btn" id="bc">Создать комнату</button><button class="btn alt" id="bj">Войти в комнату</button></div>'+((rs||[]).length?'<h2>Твои комнаты</h2>'+rs.map((r,i)=>'<button class="room" data-i="'+i+'"><b>'+esc(r.name)+'</b><small>'+(r.status==='drawn'?'Жеребьёвка прошла':'Идёт набор участников')+'</small></button>').join(''):'')+'<button class="lnk" id="out">Выйти из аккаунта</button>');
-  $('#bc').onclick=create;$('#bj').onclick=()=>join('');
+  $('#bc').onclick=create;$('#bj').onclick=()=>join('');$('#help-open').onclick=openHelp;
   document.querySelectorAll('.room').forEach(b=>b.onclick=()=>openRoom(rs[b.dataset.i]));
   $('#out').onclick=()=>{sb.auth.signOut({scope:'local'}).catch(()=>{});me=null;auth(false)};
 }
@@ -412,6 +436,14 @@ playerAudio.addEventListener('ended',()=>loadTrack(trackIndex+1,true));
 playerAudio.addEventListener('play',()=>{playerToggle.textContent='Ⅱ';playerDisc.classList.add('playing')});
 playerAudio.addEventListener('pause',()=>{playerToggle.textContent='▶';playerDisc.classList.remove('playing')});
 loadTrack(0,false);
+
+// Видеоподсказка на стартовом экране
+const helpModal=$('#help-modal'), helpVideo=$('#help-video');
+function openHelp(){helpModal.classList.add('open');helpModal.setAttribute('aria-hidden','false');helpVideo.currentTime=0;helpVideo.play().catch(()=>toast('Нажми ▶ на видео, чтобы начать просмотр'));}
+function closeHelp(){helpVideo.pause();helpModal.classList.remove('open');helpModal.setAttribute('aria-hidden','true');}
+$('#help-close').onclick=closeHelp;
+helpModal.addEventListener('click',e=>{if(e.target===helpModal)closeHelp()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&helpModal.classList.contains('open'))closeHelp()});
 
 /* ---------- старт ---------- */
 (async()=>{
